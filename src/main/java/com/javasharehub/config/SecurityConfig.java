@@ -22,13 +22,13 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         log.info("Настройка SecurityFilterChain");
         http
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/", "/files", "/files/download/**",
-                    "/register", "/login",
-                    "/css/**", "/js/**", "/img/**",
-                    "/h2-console/**"
-                ).permitAll()
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/", "/files", "/files/download/**",
+                                "/register", "/login",
+                                "/css/**", "/js/**", "/img/**",
+                                "/h2-console", "/h2-console/**"  // обе строки!
+                        ).permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
@@ -48,6 +48,7 @@ public class SecurityConfig {
             .headers(headers -> headers
                 .frameOptions(frame -> frame.disable())
             );
+
 
         return http.build();
     }

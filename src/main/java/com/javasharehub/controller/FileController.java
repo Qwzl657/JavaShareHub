@@ -8,8 +8,6 @@ import com.javasharehub.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
@@ -30,8 +28,6 @@ public class FileController {
     private final FileService fileService;
     private final UserService userService;
     private final PrivateLinkService privateLinkService;
-
-    private static final String UPLOAD_DIR = "uploads/";
 
     private boolean isAdmin(Authentication authentication) {
         if (authentication == null) return false;
@@ -99,11 +95,12 @@ public class FileController {
                 .orElseThrow(() -> new RuntimeException("Файл не найден"));
 
         if (!"PUBLIC".equals(file.getStatus())) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Файл приватный");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN,
+                    "Файл приватный");
             return;
         }
 
-        fileService.incrementDownload(file);
+        fileService.incrementDownload(id);
         sendFile(file, response);
         log.info("Публичный файл скачан: {}", file.getOriginalName());
     }
@@ -115,7 +112,7 @@ public class FileController {
                 .orElseThrow(() -> new RuntimeException("Ссылка недействительна"));
 
         SharedFile file = link.getFile();
-        fileService.incrementDownload(file);
+        fileService.incrementDownload(file.getId());
         sendFile(file, response);
         log.info("Приватный файл скачан по токену: {}", token);
     }
@@ -147,19 +144,26 @@ public class FileController {
 
     private void sendFile(SharedFile file,
                           HttpServletResponse response) throws IOException {
-        Path filePath = Paths.get(UPLOAD_DIR + file.getStoredName());
+        Path filePath = Paths.get(
+                System.getProperty("user.dir"), "uploads", file.getStoredName()
+        );
+
+        log.debug("Ищем файл по пути: {}", filePath.toAbsolutePath());
 
         if (!Files.exists(filePath)) {
+            log.error("Файл не найден на диске: {}", filePath.toAbsolutePath());
             response.sendError(HttpServletResponse.SC_NOT_FOUND,
                     "Файл не найден на сервере");
             return;
         }
 
-        Resource resource = new UrlResource(filePath.toUri());
         response.setContentType(file.getFileType() != null
                 ? file.getFileType() : "application/octet-stream");
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
                 "attachment; filename=\"" + file.getOriginalName() + "\"");
-        resource.getInputStream().transferTo(response.getOutputStream());
+        response.setContentLengthLong(Files.size(filePath));
+
+        Files.copy(filePath, response.getOutputStream());
+        response.getOutputStream().flush();
     }
 }

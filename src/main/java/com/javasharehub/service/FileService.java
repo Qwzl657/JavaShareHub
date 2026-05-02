@@ -28,16 +28,22 @@ public class FileService {
     private static final String UPLOAD_DIR = "uploads/";
     private final SharedFileRepository fileRepository;
 
+    private Path getUploadPath() {
+        return Paths.get(System.getProperty("user.dir"), "uploads");
+    }
+
     public void upload(MultipartFile file, String status,
                        String category, User user) throws IOException {
-        Path uploadPath = Paths.get(UPLOAD_DIR);
+        Path uploadPath = getUploadPath();
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
 
         String storedName = UUID.randomUUID() + "_" + file.getOriginalFilename();
         Path filePath = uploadPath.resolve(storedName);
-        file.transferTo(filePath.toFile());
+
+        // Files.copy вместо transferTo — работает корректно
+        Files.copy(file.getInputStream(), filePath);
 
         SharedFile sharedFile = SharedFile.builder()
                 .originalName(file.getOriginalFilename())
@@ -60,7 +66,8 @@ public class FileService {
         Pageable pageable = PageRequest.of(page, 10,
                 Sort.by("uploadedAt").descending());
         if (category != null && !category.isBlank()) {
-            return fileRepository.findByStatusAndCategory("PUBLIC", category, pageable);
+            return fileRepository.findByStatusAndCategory(
+                    "PUBLIC", category, pageable);
         }
         return fileRepository.findByStatus("PUBLIC", pageable);
     }
@@ -69,7 +76,8 @@ public class FileService {
         Pageable pageable = PageRequest.of(page, 10,
                 Sort.by("uploadedAt").descending());
         if (category != null && !category.isBlank()) {
-            return fileRepository.findByUserIdAndCategory(userId, category, pageable);
+            return fileRepository.findByUserIdAndCategory(
+                    userId, category, pageable);
         }
         return fileRepository.findByUserId(userId, pageable);
     }
@@ -79,9 +87,13 @@ public class FileService {
     }
 
     @Transactional
-    public void incrementDownload(SharedFile file) {
+    public void incrementDownload(Long fileId) {
+        SharedFile file = fileRepository.findById(fileId)
+                .orElseThrow(() -> new RuntimeException("Файл не найден"));
         file.setDownloadCount(file.getDownloadCount() + 1);
         fileRepository.save(file);
+        log.info("Скачивание файла: {} счётчик: {}",
+                file.getOriginalName(), file.getDownloadCount());
     }
 
     public void delete(Long fileId, String email) {
@@ -106,7 +118,9 @@ public class FileService {
 
     private void deleteFromDisk(SharedFile file) {
         try {
-            Files.deleteIfExists(Paths.get(UPLOAD_DIR + file.getStoredName()));
+            Files.deleteIfExists(
+                    getUploadPath().resolve(file.getStoredName())
+            );
         } catch (IOException e) {
             log.error("Ошибка удаления файла с диска: {}", e.getMessage());
         }

@@ -14,9 +14,9 @@
                     </div>
                     <div class="input-group">
                         <input type="text" class="form-control"
-                               value="http://localhost:8080${link}" readonly/>
+                               value="http://localhost:8081${link}" readonly/>
                         <button class="btn btn-outline-secondary"
-                                onclick="navigator.clipboard.writeText('http://localhost:8080${link}')">
+                                onclick="navigator.clipboard.writeText('http://localhost:8081${link}')">
                             <i class="bi bi-clipboard"></i>
                         </button>
                     </div>

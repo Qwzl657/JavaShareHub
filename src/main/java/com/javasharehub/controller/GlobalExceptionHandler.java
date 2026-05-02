@@ -18,6 +18,9 @@ public class GlobalExceptionHandler {
     public String handleRuntime(RuntimeException e,
                                 HttpServletRequest request,
                                 Model model) {
+        if (request.getRequestURI().contains("favicon")) {
+            return "redirect:/files";
+        }
         log.error("Ошибка на {}: {}", request.getRequestURI(), e.getMessage());
         model.addAttribute("error", e.getMessage());
         return "error";
@@ -42,7 +45,11 @@ public class GlobalExceptionHandler {
     public String handleGeneral(Exception e,
                                 HttpServletRequest request,
                                 Model model) {
-        log.error("Неожиданная ошибка на {}: {}", request.getRequestURI(), e.getMessage());
+        if (request.getRequestURI().contains("favicon")) {
+            return "redirect:/files";
+        }
+        log.error("Неожиданная ошибка на {}: {}",
+                request.getRequestURI(), e.getMessage());
         model.addAttribute("error", "Что-то пошло не так. Попробуйте позже.");
         return "error";
     }

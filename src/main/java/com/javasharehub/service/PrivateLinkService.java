@@ -34,11 +34,17 @@ public class PrivateLinkService {
     @Transactional
     public Optional<PrivateLink> useLink(String token) {
         Optional<PrivateLink> link = privateLinkRepository.findByTokenAndUsedFalse(token);
-        link.ifPresent(l -> {
-            l.setUsed(true);
-            privateLinkRepository.save(l);
-            log.info("Приватная ссылка использована: {}", token);
-        });
-        return link;
+
+        if (link.isEmpty()) {
+            log.warn("Ссылка недействительна или уже использована: {}", token);
+            return Optional.empty();
+        }
+
+        PrivateLink privateLink = link.get();
+        privateLink.setUsed(true);
+        privateLinkRepository.saveAndFlush(privateLink); // flush — сразу в БД
+        log.info("Приватная ссылка использована: {}", token);
+
+        return Optional.of(privateLink);
     }
 }
