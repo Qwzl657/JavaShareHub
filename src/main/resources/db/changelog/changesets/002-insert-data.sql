@@ -1,7 +1,10 @@
 
 INSERT INTO users (email, password, name, role) VALUES
-                                                    ('admin@mail.com', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', 'Admin', 'ROLE_ADMIN'),
+
+                                                    ('admin@mail.com', '$2a$10$slYQmyNdgTY18LRESmJ8.uMqHJjGkTXmVDmJpNLpMUmVGZNECvnLm', 'Admin', 'ROLE_ADMIN'),
+
                                                     ('user@mail.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'User One', 'ROLE_USER'),
+
                                                     ('test@mail.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'Test User', 'ROLE_USER');
 
 

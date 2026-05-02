@@ -1,26 +1,34 @@
 <#import "../layout/base.ftlh" as layout>
-<@layout.base username=username!"">
-
-    <h2 class="mb-4"><i class="bi bi-shield-check"></i> Админ панель</h2>
-
-    <div class="row g-4 mb-4">
-        <div class="col-md-3">
-            <div class="card shadow-sm text-center p-3">
-                <h2 class="text-primary">${totalFiles}</h2>
-                <p class="text-muted mb-0">Всего файлов</p>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm text-center p-3">
-                <h2 class="text-success">${totalUsers}</h2>
-                <p class="text-muted mb-0">Всего пользователей</p>
+<@layout.base username="" isAdmin=false>
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <h4 class="mb-3">
+                        <i class="bi bi-box-arrow-in-right"></i> Вход
+                    </h4>
+                    <#if RequestParameters.error??>
+                        <div class="alert alert-danger">Неверный email или пароль</div>
+                    </#if>
+                    <form method="post" action="/login">
+                        <input type="hidden" name="_csrf" value="${_csrf.token}"/>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="username"
+                                   class="form-control" required/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Пароль</label>
+                            <input type="password" name="password"
+                                   class="form-control" required/>
+                        </div>
+                        <button class="btn btn-primary w-100">Войти</button>
+                    </form>
+                    <div class="text-center mt-3">
+                        <a href="/register">Нет аккаунта? Зарегистрироваться</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-
-    <div class="alert alert-info">
-        Для управления файлами перейдите в
-        <a href="/profile">профиль пользователя</a>.
-    </div>
-
 </@layout.base>

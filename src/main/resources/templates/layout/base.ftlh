@@ -1,4 +1,4 @@
-<#macro base username="">
+<#macro base username="" isAdmin=false>
     <!DOCTYPE html>
     <html lang="ru">
     <head>
@@ -27,6 +27,11 @@
                     <a href="/files/upload" class="btn btn-success btn-sm">
                         <i class="bi bi-upload"></i> Загрузить
                     </a>
+                    <#if isAdmin>
+                        <a href="/admin" class="btn btn-warning btn-sm">
+                            <i class="bi bi-shield-check"></i> Админ
+                        </a>
+                    </#if>
                     <form method="post" action="/logout" class="d-inline">
                         <input type="hidden" name="_csrf" value="${_csrf.token}"/>
                         <button class="btn btn-outline-danger btn-sm">Выйти</button>
