@@ -1,0 +1,40 @@
+spring:
+  datasource:
+    url: jdbc:h2:file:./sharehub-db
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  liquibase:
+    change-log: classpath:db/changelog/master.yaml
+
+  freemarker:
+    template-loader-path: classpath:/templates/
+    suffix: .ftlh
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+server:
+  port: 8080
+
+logging:
+  level:
+    com.javasharehub: DEBUG
+    org.springframework.security: INFO
