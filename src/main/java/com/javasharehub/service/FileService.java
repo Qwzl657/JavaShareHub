@@ -52,11 +52,13 @@ public class FileService {
                 .build();
 
         fileRepository.save(sharedFile);
-        log.info("Файл загружен: {} пользователем: {}", file.getOriginalFilename(), user.getEmail());
+        log.info("Файл загружен: {} пользователем: {}",
+                file.getOriginalFilename(), user.getEmail());
     }
 
     public Page<SharedFile> getPublicFiles(String category, int page) {
-        Pageable pageable = PageRequest.of(page, 10, Sort.by("uploadedAt").descending());
+        Pageable pageable = PageRequest.of(page, 10,
+                Sort.by("uploadedAt").descending());
         if (category != null && !category.isBlank()) {
             return fileRepository.findByStatusAndCategory("PUBLIC", category, pageable);
         }
@@ -64,7 +66,8 @@ public class FileService {
     }
 
     public Page<SharedFile> getUserFiles(Long userId, String category, int page) {
-        Pageable pageable = PageRequest.of(page, 10, Sort.by("uploadedAt").descending());
+        Pageable pageable = PageRequest.of(page, 10,
+                Sort.by("uploadedAt").descending());
         if (category != null && !category.isBlank()) {
             return fileRepository.findByUserIdAndCategory(userId, category, pageable);
         }
@@ -87,13 +90,26 @@ public class FileService {
         if (!file.getUser().getEmail().equals(email)) {
             throw new RuntimeException("Нет доступа");
         }
+        deleteFromDisk(file);
+        fileRepository.delete(file);
+        log.info("Файл удалён: {} пользователем: {}",
+                file.getOriginalName(), email);
+    }
+
+    public void adminDelete(Long fileId) {
+        SharedFile file = fileRepository.findById(fileId)
+                .orElseThrow(() -> new RuntimeException("Файл не найден"));
+        deleteFromDisk(file);
+        fileRepository.delete(file);
+        log.info("Файл удалён администратором: {}", file.getOriginalName());
+    }
+
+    private void deleteFromDisk(SharedFile file) {
         try {
             Files.deleteIfExists(Paths.get(UPLOAD_DIR + file.getStoredName()));
         } catch (IOException e) {
-            log.error("Ошибка удаления файла: {}", e.getMessage());
+            log.error("Ошибка удаления файла с диска: {}", e.getMessage());
         }
-        fileRepository.delete(file);
-        log.info("Файл удалён: {} пользователем: {}", file.getOriginalFilename(), email);
     }
 
     public long countFiles() {
